@@ -23,7 +23,7 @@
     </p>
     <a href="https://arxiv.org/pdf/2503.01710"><img src="https://img.shields.io/badge/Paper-ArXiv-red" alt="paper"></a>
     <a href="https://sparkaudio.github.io/spark-tts/"><img src="https://img.shields.io/badge/Demo-Page-lightgrey" alt="version"></a>
-    <a href="https://huggingface.co/SparkAudio/Spark-TTS-0.5B"><img src="https://img.shields.io/badge/Hugging%20Face-Model%20Page-yellow" alt="Hugging Face"></a>
+    <a href="https://huggingface.co/swastik17/Spark-TTS-0.5B"><img src="https://img.shields.io/badge/Hugging%20Face-Model%20Page-yellow" alt="Hugging Face"></a>
     <a href="https://github.com/SparkAudio/Spark-TTS"><img src="https://img.shields.io/badge/Platform-linux-lightgrey" alt="version"></a>
     <a href="https://github.com/SparkAudio/Spark-TTS"><img src="https://img.shields.io/badge/Python-3.12+-orange" alt="version"></a>
     <a href="https://github.com/SparkAudio/Spark-TTS"><img src="https://img.shields.io/badge/PyTorch-2.5+-brightgreen" alt="python"></a>
@@ -93,7 +93,7 @@ Download via python:
 ```python
 from huggingface_hub import snapshot_download
 
-snapshot_download("SparkAudio/Spark-TTS-0.5B", local_dir="pretrained_models/Spark-TTS-0.5B")
+snapshot_download("swastik17/Spark-TTS-0.5B", local_dir="pretrained_models/Spark-TTS-0.5B")
 ```
 
 Download via git clone:
@@ -103,7 +103,7 @@ mkdir -p pretrained_models
 # Make sure you have git-lfs installed (https://git-lfs.com)
 git lfs install
 
-git clone https://huggingface.co/SparkAudio/Spark-TTS-0.5B pretrained_models/Spark-TTS-0.5B
+git clone https://huggingface.co/swastik17/Spark-TTS-0.5B pretrained_models/Spark-TTS-0.5B
 ```
 
 **Basic Usage**

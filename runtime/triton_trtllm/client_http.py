@@ -37,28 +37,28 @@ def get_args():
     parser.add_argument(
         "--server-url",
         type=str,
-        default="localhost:8000",
+        default="localhost:18000",
         help="Address of the server",
     )
 
     parser.add_argument(
         "--reference-audio",
         type=str,
-        default="../../example/prompt_audio.wav",
+        default="../../example/prompt_raju.wav",
         help="Path to a single audio file. It can't be specified at the same time with --manifest-dir",
     )
 
     parser.add_argument(
         "--reference-text",
         type=str,
-        default="吃燕窝就选燕之屋，本节目由26年专注高品质燕窝的燕之屋冠名播出。豆奶牛奶换着喝，营养更均衡，本节目由豆本豆豆奶特约播出。",
+        default="Hello world! Welcome to this exciting journey of Kapture TTS. Every great creation begins with a simple idea ... and this is probably, a step and a half.",
         help="",
     )
 
     parser.add_argument(
         "--target-text",
         type=str,
-        default="身临其境，换新体验。塑造开源语音合成新范式，让智能语音更自然。",
+        default="Hello, I am Aarav from Kapture CX. I hope you are having an wonderful day today. If you want, we can have an interesting discussion about the voice bot platform at Kapture CX.",
         help="",
     )
 

@@ -14,7 +14,7 @@ model_repo=./model_repo_test
 
 if [ $stage -le 0 ] && [ $stop_stage -ge 0 ]; then
     echo "Downloading Spark-TTS-0.5B from HuggingFace"
-    huggingface-cli download SparkAudio/Spark-TTS-0.5B --local-dir $huggingface_model_local_dir || exit 1
+    huggingface-cli download swastik17/Spark-TTS-0.5B --local-dir $huggingface_model_local_dir || exit 1
 fi
 
 
