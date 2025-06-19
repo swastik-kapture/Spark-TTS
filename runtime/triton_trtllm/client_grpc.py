@@ -155,28 +155,28 @@ def get_args():
     parser.add_argument(
         "--server-port",
         type=int,
-        default=8001,
+        default=18001,
         help="Grpc port of the triton server, default is 8001",
     )
 
     parser.add_argument(
         "--reference-audio",
         type=str,
-        default=None,
+        default="../../example/prompt_raju.wav",
         help="Path to a single audio file. It can't be specified at the same time with --manifest-dir",
     )
 
     parser.add_argument(
         "--reference-text",
         type=str,
-        default="",
+        default="Hello world! Welcome to this exciting journey of Kapture TTS. Every great creation begins with a simple idea ... and this is probably, a step and a half.",
         help="",
     )
 
     parser.add_argument(
         "--target-text",
         type=str,
-        default="",
+        default="Hello, I am Aarav from Kapture CX. I hope you are having an wonderful day today. If you want, we can have an interesting discussion about the voice bot platform at Kapture CX.",
         help="",
     )
 
@@ -205,7 +205,7 @@ def get_args():
     parser.add_argument(
         "--model-name",
         type=str,
-        default="f5_tts",
+        default="spark_tts",
         choices=["f5_tts", "spark_tts"],
         help="triton model_repo module name to request: transducer for k2, attention_rescoring for wenet offline, streaming_wenet for wenet streaming, infer_pipeline for paraformer large offline",
     )
@@ -244,7 +244,7 @@ def get_args():
     parser.add_argument(
         "--mode",
         type=str,
-        default="offline",
+        default="streaming",
         choices=["offline", "streaming"],
         help="Select offline or streaming benchmark mode."
     )
