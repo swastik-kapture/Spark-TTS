@@ -91,6 +91,8 @@ class SparkTTS:
                 "<|end_global_token|>",
                 "<|start_semantic_token|>",
                 semantic_tokens,
+                "<|end_semantic_token|>",
+                "<|im_end|>"
             ]
         else:
             inputs = [
@@ -101,8 +103,10 @@ class SparkTTS:
                 "<|start_global_token|>",
                 global_tokens,
                 "<|end_global_token|>",
+                "<|start_semantic_token|>",
+                "<|end_semantic_token|>",
+                "<|im_end|>"
             ]
-
         inputs = "".join(inputs)
 
         return inputs, global_token_ids
@@ -149,9 +153,16 @@ class SparkTTS:
             "<|end_content|>",
             "<|start_style_label|>",
             attribte_tokens,
-            "<|end_style_label|>",
+            "<|end_style_label|>"
         ]
-
+        # add explicit token markers for generation
+        control_tts_inputs.extend([
+            "<|start_global_token|>",
+            "<|end_global_token|>",
+            "<|start_semantic_token|>",
+            "<|end_semantic_token|>",
+            "<|im_end|>"
+        ])
         return "".join(control_tts_inputs)
 
     @torch.no_grad()
@@ -201,6 +212,8 @@ class SparkTTS:
             top_k=top_k,
             top_p=top_p,
             temperature=temperature,
+            eos_token_id=self.tokenizer.convert_tokens_to_ids("<|im_end|>"),
+            pad_token_id=self.tokenizer.pad_token_id,
         )
 
         # Trim the output tokens to remove the input tokens
@@ -214,22 +227,37 @@ class SparkTTS:
 
         # Extract semantic token IDs from the generated text
         pred_semantic_ids = (
-            torch.tensor([int(token) for token in re.findall(r"bicodec_semantic_(\d+)", predicts)])
+            torch.tensor([int(token) for token in re.findall(r"<\|bicodec_semantic_(\d+)\|>", predicts)])
             .long()
             .unsqueeze(0)
         )
 
         if gender is not None:
             global_token_ids = (
-                torch.tensor([int(token) for token in re.findall(r"bicodec_global_(\d+)", predicts)])
+                torch.tensor([int(token) for token in re.findall(r"<\|bicodec_global_(\d+)\|>", predicts)])
                 .long()
                 .unsqueeze(0)
                 .unsqueeze(0)
             )
+        
+        # ensure exactly 32 global tokens for detokenization
+        expected_globals = 32
+        # collapse any extra dims: bring to shape [batch, N]
+        if global_token_ids.dim() == 3:
+            global_token_ids = global_token_ids.squeeze(1)
+        # now shape is [1, N]
+        batch_size, curr_len = global_token_ids.shape
+        if curr_len < expected_globals:
+            pad = torch.zeros((batch_size, expected_globals - curr_len),
+                              dtype=global_token_ids.dtype,
+                              device=global_token_ids.device)
+            global_token_ids = torch.cat([global_token_ids, pad], dim=1)
+        elif curr_len > expected_globals:
+            global_token_ids = global_token_ids[:, :expected_globals]
 
         # Convert semantic tokens back to waveform
         wav = self.audio_tokenizer.detokenize(
-            global_token_ids.to(self.device).squeeze(0),
+            global_token_ids.to(self.device),
             pred_semantic_ids.to(self.device),
         )
 
