@@ -80,6 +80,8 @@ def process_prompt(
             "<|end_global_token|>",
             "<|start_semantic_token|>",
             semantic_tokens,
+            "<|end_semantic_token|>",
+            "<|im_end|>",
         ]
     else:
         # Without prompt text, exclude semantic tokens
@@ -91,6 +93,8 @@ def process_prompt(
             "<|start_global_token|>",
             global_tokens,
             "<|end_global_token|>",
+            "<|end_semantic_token|>",
+            "<|im_end|>",
         ]
 
     # Join all input components into a single string
@@ -288,11 +292,28 @@ class TritonPythonModel:
         )[0]
         pred_semantic_ids = (
             torch.tensor(
-                [int(token) for token in re.findall(r"bicodec_semantic_(\d+)", predicted_text)]
+                [int(token) for token in re.findall(r"<\|bicodec_semantic_(\d+)\|>", predicted_text)]
             )
             .unsqueeze(0)
             .to(torch.int32)
         )
+
+        # -- ensure exactly 32 global tokens for vocoder --
+        expected_globals = 32
+        glob = global_token_ids
+        if glob.dim() == 3:
+            glob = glob.squeeze(1)
+        batch_size, curr_len = glob.shape
+        if curr_len < expected_globals:
+            pad = torch.zeros((batch_size, expected_globals - curr_len),
+                              dtype=glob.dtype, device=glob.device)
+            glob = torch.cat([glob, pad], dim=1)
+        elif curr_len > expected_globals:
+            glob = glob[:, :expected_globals]
+        # add channel dim -> [batch,1,32]
+        glob = glob.unsqueeze(1)
+        global_token_ids = glob
+        # --------------------------------------------
 
         # Generate audio with vocoder
         audio = self.forward_vocoder(
