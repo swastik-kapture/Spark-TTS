@@ -263,10 +263,19 @@ class TritonPythonModel:
         Returns:
             Generated waveform tensor
         """
-        # Convert tensors to Triton format
-        global_token_ids_tensor = pb_utils.Tensor.from_dlpack("global_tokens", to_dlpack(global_token_ids))
-        pred_semantic_ids_tensor = pb_utils.Tensor.from_dlpack("semantic_tokens", to_dlpack(pred_semantic_ids))
-        
+        # Log input tensor shapes
+        self.logger.log_info(f"[forward_vocoder] global_token_ids shape: {tuple(global_token_ids.shape)}, "
+                             f"pred_semantic_ids shape: {tuple(pred_semantic_ids.shape)}")
+        # Ensure global_tokens is 2D [batch, seq_len]
+        if global_token_ids.dim() == 3 and global_token_ids.size(1) == 1:
+            global_token_ids = global_token_ids.squeeze(1)
+
+        # Convert to numpy and create Triton Tensors with explicit 2D shapes
+        global_np = global_token_ids.cpu().numpy()
+        semantic_np = pred_semantic_ids.cpu().numpy()
+        global_token_ids_tensor = pb_utils.Tensor("global_tokens", global_np)
+        pred_semantic_ids_tensor = pb_utils.Tensor("semantic_tokens", semantic_np)
+
         # Create and execute inference request
         inference_request = pb_utils.InferenceRequest(
             model_name='vocoder',
@@ -298,6 +307,10 @@ class TritonPythonModel:
             .to(torch.int32)
         )
 
+        # Log shapes before clamping
+        self.logger.log_info(f"[token2wav] initial global_token_ids shape: {tuple(global_token_ids.shape)}, "
+                             f"pred_semantic_ids shape: {tuple(pred_semantic_ids.shape)}")
+
         # -- ensure exactly 32 global tokens for vocoder --
         expected_globals = 32
         glob = global_token_ids
@@ -310,8 +323,7 @@ class TritonPythonModel:
             glob = torch.cat([glob, pad], dim=1)
         elif curr_len > expected_globals:
             glob = glob[:, :expected_globals]
-        # add channel dim -> [batch,1,32]
-        glob = glob.unsqueeze(1)
+        # No channel dim added here
         global_token_ids = glob
         # --------------------------------------------
 
