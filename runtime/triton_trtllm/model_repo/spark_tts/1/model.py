@@ -167,7 +167,7 @@ class TritonPythonModel:
         """
         # convert input_ids to numpy, with shape [1, sequence_length]
         input_ids = input_ids.cpu().numpy()
-        max_tokens = 512
+        max_tokens = 2048
         input_dict = {
             "request_output_len": np.array([[max_tokens]], dtype=np.int32),
             "end_id": np.array([[self.tokenizer.eos_token_id]], dtype=np.int32),
